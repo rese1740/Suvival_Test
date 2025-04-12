@@ -1,83 +1,90 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class Player_Ctrl : MonoBehaviour
 {
+    [Header("Camera")]
+    public Camera playerCamera;
+    public float mouseSensitivity = 100f;
+    float xRotation = 0f;
+
+    [Header("Movement")]
+    public float moveSpeed = 5f;
+    public float jumpForce = 5f;
+    public Transform groundCheck;
+    public float groundDistance = 0.4f;
+    public LayerMask groundMask;
+
     Rigidbody rb;
-
-    [Header("Rotate")]
-    public float mouseSpeed;
-    float yRotation;
-    float xRotation;
-     Camera cam;
-
-    [Header("Jump")]
-    public float jumpForce;
-
-    [Header("Ground Check")]
-    public float playerHeight;
-    bool grounded;
-
-    [Header("Move")]
-    public float moveSpeed;
-    float h;
-    float v;
+    Animator animator;
+    bool isGrounded;
 
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;   // ¸¶¿ì½º Ä¿¼­¸¦ È­¸é ¾È¿¡¼­ °íÁ¤
-        Cursor.visible = false;                     // ¸¶¿ì½º Ä¿¼­¸¦ º¸ÀÌÁö ¾Êµµ·Ï ¼³Á¤
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
-        rb = GetComponent<Rigidbody>();             // Rigidbody ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
-        rb.freezeRotation = true;                   // RigidbodyÀÇ È¸ÀüÀ» °íÁ¤ÇÏ¿© ¹°¸® ¿¬»ê¿¡ ¿µÇâÀ» ÁÖÁö ¾Êµµ·Ï ¼³Á¤
+        rb = GetComponent<Rigidbody>();
+        animator = GetComponent<Animator>();
 
-        cam = Camera.main;                          // ¸ŞÀÎ Ä«¸Ş¶ó¸¦ ÇÒ´ç
+        rb.useGravity = true; // ì¤‘ë ¥ ì‚¬ìš©ì„ í™œì„±í™”
     }
 
     void Update()
     {
-        Rotate();
-
-        Move();
-
-        // ÇÃ·¹ÀÌ¾îÀÇ ¾Æ·¡ ¹æÇâÀ¸·Î ·¹ÀÌ¸¦ ¹ß»çÇÏ¿© Áö¸é°ú Ãæµ¹ÇÏ´ÂÁö È®ÀÎ
-        grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f);
-
-        if (grounded && Input.GetKeyDown(KeyCode.Space))
-        {
-            Jump();
-        }
+        LookAround();
+        Jump();
     }
 
-    void Rotate()
+    void FixedUpdate()
     {
-        float mouseX = Input.GetAxisRaw("Mouse X") * mouseSpeed * Time.deltaTime;
-        float mouseY = Input.GetAxisRaw("Mouse Y") * mouseSpeed * Time.deltaTime;
+        Move();
+        GroundCheck();
+    }
 
-        yRotation += mouseX;    // ¸¶¿ì½º XÃà ÀÔ·Â¿¡ µû¶ó ¼öÆò È¸Àü °ªÀ» Á¶Á¤
-        xRotation -= mouseY;    // ¸¶¿ì½º YÃà ÀÔ·Â¿¡ µû¶ó ¼öÁ÷ È¸Àü °ªÀ» Á¶Á¤
+    void LookAround()
+    {
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);  
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        cam.transform.rotation = Quaternion.Euler(xRotation, yRotation, 0); 
-        transform.rotation = Quaternion.Euler(0, yRotation, 0);             // ÇÃ·¹ÀÌ¾î Ä³¸¯ÅÍÀÇ È¸ÀüÀ» Á¶Àı
+        playerCamera.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        transform.Rotate(Vector3.up * mouseX);
     }
 
     void Move()
     {
-        h = Input.GetAxisRaw("Horizontal"); 
-        v = Input.GetAxisRaw("Vertical");  
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
 
-        // ÀÔ·Â¿¡ µû¶ó ÀÌµ¿ ¹æÇâ º¤ÅÍ °è»ê
-        Vector3 moveVec = transform.forward * v + transform.right * h;
+        Vector3 move = transform.right * h + transform.forward * v;
+        Vector3 newVelocity = new Vector3(move.x * moveSpeed, rb.velocity.y, move.z * moveSpeed);
+        rb.velocity = newVelocity;
 
-        transform.position += moveVec.normalized * moveSpeed * Time.deltaTime;
+        // ì• ë‹ˆë©”ì´ì…˜ ìƒíƒœ ì „í™˜
+        bool isMoving = move.magnitude > 0.1f;  // ì¼ì • ì´ìƒ ì…ë ¥ì´ ìˆì„ ë•Œë§Œ true
+        animator.SetBool("Move", isMoving);
     }
 
     void Jump()
     {
-        rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse); // ÈûÀ» °¡ÇØ Á¡ÇÁ
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z); // y ì†ë„ ì´ˆê¸°í™”
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+    }
+
+    void GroundCheck()
+    {
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (groundCheck == null) return;
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(groundCheck.position, groundDistance);
     }
 }
-

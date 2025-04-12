@@ -16,7 +16,8 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 0
     motionNodeName: 
-    rigImportErrors: 
+    rigImportErrors: "Invalid copied Avatar Rig Configuration:\n\tNo human bone found.
+      Ensure both rig type match\n"
     rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
@@ -77,13 +78,7 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-  referencedClips:
-  - ce30750d22658fd4d93301bd0b70a3d4
-  - de8949a7fc57eb74696e194eb37dbb41
-  - 2b9c453aa7784fc46bc7d1f5dafb10c6
-  - 4f7b46a9eb28aa3479216afaaeba1a68
-  - 42b9b9759a49c094590bdff37c3f0751
-  - 4e0750071b4d1714d92dcd18d7b50d74
+  referencedClips: []
   importAnimation: 1
   humanDescription:
     serializedVersion: 3
