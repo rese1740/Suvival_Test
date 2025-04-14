@@ -25,6 +25,7 @@ public class Player_Ctrl : MonoBehaviour
 
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
+        playerCamera.transform.rotation = Quaternion.Euler(0f, 109f, 0f);  // x, y, z 회전값
 
         rb.useGravity = true; // 중력 사용을 활성화
     }
@@ -87,4 +88,6 @@ public class Player_Ctrl : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(groundCheck.position, groundDistance);
     }
+
+
 }
