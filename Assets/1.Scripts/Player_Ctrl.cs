@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Kinnly;
+using UnityEngine;
 
 public class Player_Ctrl : MonoBehaviour
 {
@@ -14,6 +15,9 @@ public class Player_Ctrl : MonoBehaviour
     public float groundDistance = 0.4f;
     public LayerMask groundMask;
 
+    [Header("인벤토리")]
+    public GameObject inventory;
+
     Rigidbody rb;
     Animator animator;
     bool isGrounded;
@@ -25,15 +29,19 @@ public class Player_Ctrl : MonoBehaviour
 
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
-        playerCamera.transform.rotation = Quaternion.Euler(0f, 109f, 0f);  // x, y, z 회전값
+        playerCamera.transform.rotation = Quaternion.Euler(0f, 109f, 0f);  
 
-        rb.useGravity = true; // 중력 사용을 활성화
+        rb.useGravity = true; 
     }
 
     void Update()
     {
         LookAround();
         Jump();
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            InventoryOpen();
+        }
     }
 
     void FixedUpdate()
@@ -82,6 +90,10 @@ public class Player_Ctrl : MonoBehaviour
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
     }
 
+    void InventoryOpen()
+    {
+        inventory.SetActive(!inventory.activeSelf);
+    }
     void OnDrawGizmosSelected()
     {
         if (groundCheck == null) return;
